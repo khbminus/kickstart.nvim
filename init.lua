@@ -84,7 +84,7 @@ require('lazy').setup({
 
       -- Useful status updates for LSP
       -- NOTE: `opts = {}` is the same as calling `require('fidget').setup({})`
-      { 'j-hui/fidget.nvim', opts = {} },
+      { 'j-hui/fidget.nvim', opts = {}, tag = "legacy" },
 
       -- Additional lua configuration, makes nvim stuff amazing!
       'folke/neodev.nvim',
@@ -144,7 +144,7 @@ require('lazy').setup({
     -- See `:help lualine.txt`
     opts = {
       options = {
-        icons_enabled = false,
+        icons_enabled = true,
         theme = 'onedark',
         component_separators = '|',
         section_separators = '',
@@ -419,6 +419,13 @@ local on_attach = function(_, bufnr)
   end, { desc = 'Format current buffer with LSP' })
 end
 
+-- spell files and addtiional words for ltex
+vim.opt.spellfile = vim.fn.stdpath("config") .. "/spell/en.utf-8.add"
+local words = {}
+for word in io.open(vim.fn.stdpath("config") .. "/spell/en.utf-8.add", "r"):lines() do
+	table.insert(words, word)
+end
+
 -- Enable the following language servers
 --  Feel free to add/remove any LSPs that you want here. They will automatically be installed.
 --
@@ -437,6 +444,16 @@ local servers = {
       telemetry = { enable = false },
     },
   },
+  ltex = {
+    language = "en-US",
+    additionalRules = {
+      motherTongue = "ru-RU",
+      enablePickyRules = false,
+    },
+    dictionary = {
+      ["en-US"] = words,
+    }
+  }
 }
 
 -- Setup neovim lua configuration
@@ -459,6 +476,7 @@ mason_lspconfig.setup_handlers {
       capabilities = capabilities,
       on_attach = on_attach,
       settings = servers[server_name],
+      flags = { debounce_text_changes = 300 }
     }
   end,
 }
@@ -466,9 +484,16 @@ mason_lspconfig.setup_handlers {
 -- [[ Configure nvim-cmp ]]
 -- See `:help cmp`
 local cmp = require 'cmp'
+local cmp_autopairs = require 'nvim-autopairs.completion.cmp'
 local luasnip = require 'luasnip'
 require('luasnip.loaders.from_vscode').lazy_load()
+require('luasnip.loaders.from_lua').load({paths = "~/.config/nvim/LuaSnip/"})
 luasnip.config.setup {}
+luasnip.config.set_config({
+  enable_autosnippets = true,
+  store_selection_keys="<Tab>",
+  update_events = 'TextChanged,TextChangedI'
+})
 
 cmp.setup {
   snippet = {
@@ -482,10 +507,17 @@ cmp.setup {
     ['<C-d>'] = cmp.mapping.scroll_docs(-4),
     ['<C-f>'] = cmp.mapping.scroll_docs(4),
     ['<C-Space>'] = cmp.mapping.complete {},
-    ['<CR>'] = cmp.mapping.confirm {
-      behavior = cmp.ConfirmBehavior.Replace,
-      select = true,
-    },
+    ["<CR>"] = cmp.mapping({
+       i = function(fallback)
+         if cmp.visible() and cmp.get_active_entry() then
+           cmp.confirm({ behavior = cmp.ConfirmBehavior.Replace, select = false })
+         else
+           fallback()
+         end
+       end,
+       s = cmp.mapping.confirm({ select = true }),
+       c = cmp.mapping.confirm({ behavior = cmp.ConfirmBehavior.Replace, select = true }),
+     }),
     ['<Tab>'] = cmp.mapping(function(fallback)
       if cmp.visible() then
         cmp.select_next_item()
@@ -505,11 +537,30 @@ cmp.setup {
       end
     end, { 'i', 's' }),
   },
+  completion = { autocomplete = { require('cmp.types').cmp.TriggerEvent.TextChanged } },
   sources = {
     { name = 'nvim_lsp' },
     { name = 'luasnip' },
   },
 }
+
+cmp.event:on(
+  'confirm_done',
+  cmp_autopairs.on_confirm_done()
+)
+
+-- set tabstop 
+vim.o.tabstop     = 4    -- number of columns occupied by a tab 
+vim.o.softtabstop = 4    -- see multiple spaces as tabstops so <BS> does the right thing
+vim.o.expandtab   = true -- converts tabs to white space
+vim.o.shiftwidth  = 4    -- width for autoindents
+vim.o.autoindent  = true -- indent a new line the same amount as the line just typed
+
+--  Tab managemet
+vim.keymap.set("n", "<leader>tn", function() vim.cmd("tabnext") end, { desc = "[t]ab [n]ext" })
+vim.keymap.set("n", "<leader>tp", function() vim.cmd("tabprev") end, { desc = "[t]ab [p]revious"})
+
+
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
