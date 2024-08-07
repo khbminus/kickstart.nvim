@@ -373,7 +373,7 @@ return
     }
   ),
   -- DOT PRODUCT, i.e. \cdot
-  s({trig = "*", snippetType="autosnippet"},
+  s({trig = "**", snippetType="autosnippet"},
     {
       t("\\cdot "),
     }

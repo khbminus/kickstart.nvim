@@ -109,15 +109,15 @@ return
       )
     ),
     -- href command with text in visual selection
-    s({trig="LL", snippetType="autosnippet"},
-      fmta(
-        [[\href{<>}{<>}]],
-        {
-          i(1),
-          d(2, get_visual)
-        }
-      )
-    ),
+    -- s({trig="LL", snippetType="autosnippet"},
+    --  fmta(
+    --    [[\href{<>}{<>}]],
+    --   {
+    --      i(1),
+    --      d(2, get_visual)
+    --    }
+    --  )
+    -- ),
     -- HSPACE
     s({trig="hss", snippetType="autosnippet"},
       fmta(
