@@ -682,6 +682,9 @@ require('lazy').setup({
           end
           return 'make install_jsregexp'
         end)(),
+        config = function()
+          require('luasnip.loaders.from_lua').load { paths = '~/.config/nvim/LuaSnip/' }
+        end,
         dependencies = {
           -- `friendly-snippets` contains a variety of premade snippets.
           --    See the README about individual language/framework/plugin snippets:
@@ -776,6 +779,7 @@ require('lazy').setup({
           },
           { name = 'nvim_lsp' },
           { name = 'luasnip' },
+          -- { name = 'ltex-ls' },
           { name = 'path' },
         },
       }
@@ -849,10 +853,11 @@ require('lazy').setup({
       auto_install = true,
       highlight = {
         enable = true,
+        disable = { 'latex' },
         -- Some languages depend on vim's regex highlighting system (such as Ruby) for indent rules.
         --  If you are experiencing weird indenting issues, add the language to
         --  the list of additional_vim_regex_highlighting and disabled languages for indent.
-        additional_vim_regex_highlighting = { 'ruby' },
+        additional_vim_regex_highlighting = { 'ruby', 'latex' },
       },
       indent = { enable = true, disable = { 'ruby' } },
     },
@@ -881,18 +886,18 @@ require('lazy').setup({
   --  Uncomment any of the lines below to enable them (you will need to restart nvim).
   --
   -- require 'kickstart.plugins.debug',
-  -- require 'kickstart.plugins.indent_line',
+  require 'kickstart.plugins.indent_line',
   -- require 'kickstart.plugins.lint',
-  -- require 'kickstart.plugins.autopairs',
-  -- require 'kickstart.plugins.neo-tree',
-  -- require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
+  require 'kickstart.plugins.autopairs',
+  require 'kickstart.plugins.neo-tree',
+  require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
 
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
   --    This is the easiest way to modularize your config.
   --
   --  Uncomment the following line and add your plugins to `lua/custom/plugins/*.lua` to get going.
   --    For additional information, see `:help lazy.nvim-lazy.nvim-structuring-your-plugins`
-  -- { import = 'custom.plugins' },
+  { import = 'custom.plugins' },
 }, {
   ui = {
     -- If you are using a Nerd Font: set icons to an empty table which will use the
@@ -915,23 +920,20 @@ require('lazy').setup({
   },
 })
 
-cmp.event:on(
-  'confirm_done',
-  cmp_autopairs.on_confirm_done()
-)
-
--- set tabstop 
-vim.o.tabstop     = 4    -- number of columns occupied by a tab 
-vim.o.softtabstop = 4    -- see multiple spaces as tabstops so <BS> does the right thing
-vim.o.expandtab   = true -- converts tabs to white space
-vim.o.shiftwidth  = 4    -- width for autoindents
-vim.o.autoindent  = true -- indent a new line the same amount as the line just typed
+-- set tabstop
+vim.o.tabstop = 4 -- number of columns occupied by a tab
+vim.o.softtabstop = 4 -- see multiple spaces as tabstops so <BS> does the right thing
+vim.o.expandtab = true -- converts tabs to white space
+vim.o.shiftwidth = 4 -- width for autoindents
+vim.o.autoindent = true -- indent a new line the same amount as the line just typed
 
 --  Tab managemet
-vim.keymap.set("n", "<leader>tn", function() vim.cmd("tabnext") end, { desc = "[t]ab [n]ext" })
-vim.keymap.set("n", "<leader>tp", function() vim.cmd("tabprev") end, { desc = "[t]ab [p]revious"})
-
-
+vim.keymap.set('n', '<leader>tn', function()
+  vim.cmd 'tabnext'
+end, { desc = '[t]ab [n]ext' })
+vim.keymap.set('n', '<leader>tp', function()
+  vim.cmd 'tabprev'
+end, { desc = '[t]ab [p]revious' })
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
